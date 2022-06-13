@@ -1,14 +1,14 @@
 # Monitoring IPsec tunnels on PFSense using zabbix
 
-This project was forked from https://github.com/jpmenil/zabbix-templates. Thanks to @jpmenil by share 
+This project was forked from https://github.com/alanwds/zabbix_ipsec_pfsense. Thanks to @alanwds and @smejdil for their work. 
 
-This template is used for monitoring IPSEC tunnels on PFSense using zabbix.
+These scripts are used for monitoring IPSEC tunnels on PFSense v22.01 using zabbix.
 
 # Dependencies
 
-- Zabbix agent (you can install it from pfsense packages manager)
+- Zabbix agent 5.4 (you can install it from pfsense packages manager)
 - sudo (you can install it from pfsense packages manager)
-- Zabbix Server >= 3.2
+- Zabbix Server >= 5.4
 - check_ipsec.sh
 - check_ipsec_traffic.sh
 - zabbix-ipsec.py
@@ -16,17 +16,17 @@ This template is used for monitoring IPSEC tunnels on PFSense using zabbix.
 
 # How it works
 
-The template queries zabbix-ipsec.py for tunnels ids (conXXXX). After that, the items prototipes are created consuming check_ipsec.sh script. The script check_ipsec_traffic is used to collect traffic about the tunnel. There are also a grafana dashboard if you want https://grafana.com/dashboards/8008 (grafana_ipsec_dashboard.json).
+The script zabbix-ipsec.py for tunnels ids (conX). After that, the zabbix items are created with the check_ipsec.sh script. The script check_ipsec_traffic.sh is used to collect traffic metrics about a given tunnel.
 
 ### Installation
 
-- You have to put check_ipsec.sh, check_ipsec_traffic.sh and zabbix-ipsec.py on pfsense filesystem. (/usr/local/bin/ in this example)
+- You have to upload check_ipsec.sh, check_ipsec_traffic.sh and zabbix-ipsec.py on pfsense filesystem. (/usr/local/bin/ in this example)
 - Install sudo pakage at pfsense packages manager
 - Copy file zabbix_sudoers under /usr/local/etc/sudoers.d
-- Enabled Custom Configuration on Advanced Settins at System -> sudo
-- Create the follow user parameters at zabbix-agent config page on pfsense (Service -> Zabbix-agent -> Advanced Options)
+- Enable Custom Configuration on Advanced Settings at System -> sudo
+- Create the following user parameters on zabbix-agent config page on pfsense (Service -> Zabbix-agent -> Advanced Options)
 ```
-UserParameter=ipsec.discover,/usr/local/bin/python2.7 /usr/local/bin/zabbix-ipsec.py
+UserParameter=ipsec.discover,/usr/local/bin/python3.8 /usr/local/bin/zabbix-ipsec.py
 UserParameter=ipsec.tunnel[*],/usr/local/bin/sudo /usr/local/bin/check_ipsec.sh $1
 UserParameter=ipsec.traffic[*],/usr/local/bin/sudo /usr/local/bin/check_ipsec_traffic.sh $1 $2
 ```
@@ -37,12 +37,4 @@ chmod +x /usr/local/bin/check_ipsec.sh
 chmod +x /usr/local/bin/check_ipsec_traffic.sh 
 ``` 
 - Import the template ipsec_template.xml on zabbix and attach to pfsense hosts
-- Go get a beer
-
-# To do
-
-- Create feature to check if there are communication between sites (ping, nc or something like that)
-- Recfactoring check_ipsec_traffic and check_ipsec to optimize execution (use a kind of cache insted of run ipsec command and parser result a lot of times)
-
-# Notes
- PR are always welcome
+- Grab a cup of coffee
