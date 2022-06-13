@@ -1,89 +1,49 @@
-#!/usr/local/bin/python2.7
+#!/usr/local/bin/python3.8
 
 import itertools
 import re
 import sys
 import xml.etree.cElementTree as ET
 
-IPSEC_CONF = '/var/etc/ipsec/ipsec.conf'
-PFSENSE_CONF = '/conf/config.xml'
+IPSEC_CONF = '/var/etc/ipsec/swanctl.conf'
 rtt_time_warn = 200
 rtt_time_error = 300
 
-#Parse the XML
-tree = ET.parse(PFSENSE_CONF)
-root = tree.getroot()
-
-#Function to find phase description by ikeid
-def findDescr(remoteid,ikeid):
-
-    #Check if the parameter was sent
-    if not remoteid:
-        return "Not found"
-
-    #create search string. We use the "..." after the search to return the parent element of the current element.
-    #The reason for that is the remoteid is a sub element of phase2 element 
-    search = "./ipsec/phase2/remoteid/[address='" + remoteid + "']..."
-
-    for tunnel in root.findall(search):
-        descr = tunnel.find('descr').text
-
-        #If we have only one result, we are talking about the correct tunnel
-        if len(root.findall(search)) == 1:
-            return descr
-
-        #otherwise, if we have more than 1, we have to confirm the remoteid and the ikeid 
-        #Case the ikeIds are the same, we got it. Case not, we pass and wait for next interation
-        else:
-            #Get the ikeid of this element
-            ikeidElement = tunnel.find('ikeid').text
-            if ikeidElement == ikeid:
-                return descr
-
-    return "Not found"
-
-#Function to set correct format on ikeId. Recives conIDXXX, return ID
-def formatIkeId(ikeid):
-	
-    #Convert list  into a string
-    ikeid = ikeid[0]
-
-    #If ikeid has 8 or more positions, get the position 3 and 4
-    if len(ikeid) >= 8:
-        ikeid = ikeid[3] + ikeid[4]
-    else:
-        #Else, get only the position 3. That is because some ikeids are small
-        ikeid = ikeid[3]
-
-    #print "The correct ike id is ", ikeid
-    return ikeid
-
 def parseConf():
-    reg_conn = re.compile('^conn\s((?!%default).*)')
-    reg_left = re.compile('.*leftid =(.*).*')
-    reg_right = re.compile('.*rightid =(.*).*')
-    reg_rightsubnet = re.compile('.*rightsubnet =(.*).*')
+    reg_conn = re.compile('con[0-9]')
+    reg_local = re.compile('(?<=local_addrs = ).*')
+    reg_remote = re.compile('(?<=remote_addrs = ).*')
+    reg_descr = re.compile('(?<=\# P1 \(ikeid [0-9]\): ).*')
+    
     data = {}
     with open(IPSEC_CONF, 'r') as f:
-        for key, group in itertools.groupby(f, lambda line: line.startswith('\n')):
-            if not key:
-                conn_info = list(group)
-                conn_tmp = [m.group(1) for l in conn_info for m in [reg_conn.search(l)] if m]
-                left_tmp = [m.group(1) for l in conn_info for m in [reg_left.search(l)] if m]
-                right_tmp = [m.group(1) for l in conn_info for m in [reg_right.search(l)] if m]
-                rightsubnet_tmp = [m.group(1) for l in conn_info for m in [reg_rightsubnet.search(l)] if m]
-                if len(conn_tmp) > 0 :
-                    if len(rightsubnet_tmp):
-                        rightsubnet_tmp = rightsubnet_tmp[0].lstrip() #remore spaces
-                        rightsubnet_tmp = rightsubnet_tmp.split("/") #Split string to get only ip, without subnet mask)
-                        descr = findDescr(rightsubnet_tmp[0],formatIkeId(conn_tmp))
-                    else:
-                        rightsubnet_tmp.append("Not found")
-                else:
-                        descr = "Not found"
-                if conn_tmp and left_tmp and right_tmp:
-                    data[conn_tmp[0]] = [left_tmp[0], right_tmp[0], descr]
-    return data
+        soubor = f.read()
+        groups = re.findall('(con[0-9]+.*?)(?=^\s*dpd_action.*?}.*?}.*?})', soubor, flags=re.DOTALL|re.MULTILINE)
+        for g in groups:
+            conn_tmp = list()
+            m = re.search(reg_conn, g)
+            m = m.group(0)
+            if m:
+                conn_tmp.append(m)
+            local_tmp = list()
+            m1 = re.search(reg_local, g)
+            m1 = m1.group(0)
+            if m1:
+                local_tmp.append(m1)
+            remote_tmp = list()
+            m2 = re.search(reg_remote, g)
+            m2 = m2.group(0)
+            if m2:
+                remote_tmp.append(m2)
+            descr_tmp = list()
+            m3 = re.search(reg_descr, g)
+            m3 = m3.group(0)
+            if m3:
+                descr_tmp.append(m3)
+            
+            if conn_tmp and local_tmp and remote_tmp and descr_tmp:
+                    data[conn_tmp[0]] = [local_tmp[0], remote_tmp[0], descr_tmp[0]]
+        return data
 
 def getTemplate():
     template = """
