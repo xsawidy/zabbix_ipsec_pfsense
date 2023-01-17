@@ -10,15 +10,15 @@ rtt_time_warn = 200
 rtt_time_error = 300
 
 def parseConf():
-    reg_conn = re.compile('con[0-9]')
+    reg_conn = re.compile('con[0-9]+')
     reg_local = re.compile('(?<=local_addrs = ).*')
     reg_remote = re.compile('(?<=remote_addrs = ).*')
-    reg_descr = re.compile('(?<=\# P1 \(ikeid [0-9]\): ).*')
+    reg_descr = re.compile('^\s*# P1 \(ikeid [0-9]+\): (.+)\s*$', re.MULTILINE)
     
     data = {}
     with open(IPSEC_CONF, 'r') as f:
         soubor = f.read()
-        groups = re.findall('(con[0-9]+.*?)(?=^\s*dpd_action.*?}.*?}.*?})', soubor, flags=re.DOTALL|re.MULTILINE)
+        groups = re.findall('(con[0-9]+\s*?{.*?)(?=^\s*dpd_action.*?}.*?}.*?})', soubor, flags=re.DOTALL|re.MULTILINE)
         for g in groups:
             conn_tmp = list()
             m = re.search(reg_conn, g)
@@ -37,7 +37,7 @@ def parseConf():
                 remote_tmp.append(m2)
             descr_tmp = list()
             m3 = re.search(reg_descr, g)
-            m3 = m3.group(0)
+            m3 = m3.group(1)
             if m3:
                 descr_tmp.append(m3)
             
