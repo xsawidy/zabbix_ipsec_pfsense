@@ -16,7 +16,7 @@ else
 fi
 
 test_tunnel() {
-    CONN="$1"_
+	CONN="$1"_
 
 	if [ "$STRONG" -eq "1" ]; then
 		ipsec status | grep -e "$CONN" > /dev/null 2>&1

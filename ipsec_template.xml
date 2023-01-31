@@ -57,7 +57,7 @@
                     <description/>
                     <item_prototypes>
                         <item_prototype>
-                            <name>Bytes IN: {#DESCRIPTION} -  {#TUNNEL}</name>
+                            <name>Bytes IN: {#DESCRIPTION} - {#TUNNEL}</name>
                             <type>0</type>
                             <snmp_community/>
                             <snmp_oid/>
@@ -99,7 +99,7 @@
                             <master_item_prototype/>
                         </item_prototype>
                         <item_prototype>
-                            <name>Bytes OUT: {#DESCRIPTION} -  {#TUNNEL}</name>
+                            <name>Bytes OUT: {#DESCRIPTION} - {#TUNNEL}</name>
                             <type>0</type>
                             <snmp_community/>
                             <snmp_oid/>
@@ -141,7 +141,7 @@
                             <master_item_prototype/>
                         </item_prototype>
                         <item_prototype>
-                            <name>PKTS IN: {#DESCRIPTION} -  {#TUNNEL}</name>
+                            <name>PKTS IN: {#DESCRIPTION} - {#TUNNEL}</name>
                             <type>0</type>
                             <snmp_community/>
                             <snmp_oid/>
@@ -183,7 +183,7 @@
                             <master_item_prototype/>
                         </item_prototype>
                         <item_prototype>
-                            <name>PKTS Out: {#DESCRIPTION} -  {#TUNNEL}</name>
+                            <name>PKTS OUT: {#DESCRIPTION} - {#TUNNEL}</name>
                             <type>0</type>
                             <snmp_community/>
                             <snmp_oid/>
@@ -272,7 +272,7 @@
                             <expression>{Pfsense IPSec tunnels:ipsec.tunnel[{#TUNNEL}].last(0)}&lt;&gt;0</expression>
                             <recovery_mode>0</recovery_mode>
                             <recovery_expression/>
-                            <name>Tunnel: {#DESCRIPTION} - {#TUNNEL}  down</name>
+                            <name>Tunnel: {#DESCRIPTION} - {#TUNNEL} down</name>
                             <correlation_mode>0</correlation_mode>
                             <correlation_tag/>
                             <url/>
