@@ -11,33 +11,33 @@ if [ $? -ne 0 ]; then
 	echo "$IPSECBIN does not exist"
 	exit $STATE_CRITICAL
 else
-	STRONG=`$IPSECBIN --version |grep strongSwan | wc -l`
+	STRONG=`$IPSECBIN --version | grep strongSwan | wc -l`
 fi
 
 getTraffic() {
-	CONN="$1"
+	CONN="$1"_
 	METRIC="$2"
 
 	if [ "$STRONG" -eq "1" ]; then
 		ipsec status | grep -e "$CONN" > /dev/null 2>&1
 		if [ $? -eq 0 ]; then
-			ipsec statusall | grep -e "$CONN" | grep -v "ESTABLISHED" | grep -E "$IPV4_REGEX" | grep -e "bytes" | grep -e "pkts" > /dev/null 2>&1
+			ipsec statusall | grep -e "$CONN" | grep -e "bytes" | grep -e "pkts" > /dev/null 2>&1
 			if [ $? -eq 0 ]; then
 				case $METRIC in
 					bytesIn)
-						bytesIn=$(ipsec statusall | grep -e "$CONN" | grep bytes_i | awk -F" " '{print $3}')
+						bytesIn=$(ipsec statusall | grep -e "$CONN" | grep bytes_i | awk -F" " '{print $3}' | awk '{SUM += $1} END {print SUM}')
 						echo $bytesIn
 						;;
 					bytesOut)
-						bytesOut=$(ipsec statusall | grep -e "$CONN" | grep bytes_i | awk -F" " '{print $9}')
+						bytesOut=$(ipsec statusall | grep -e "$CONN" | grep bytes_i | awk -F" " '{print $9}' | awk '{SUM += $1} END {print SUM}')
 						echo $bytesOut
 						;;
 					pktsIn)
-						pktsIn=$(ipsec statusall | grep -e "$CONN" | grep bytes_i | awk -F" " '{print $3}' | cut -c 2-)
+						pktsIn=$(ipsec statusall | grep -e "$CONN" | grep bytes_i | awk -F" " '{print $5}' | cut -c 2- | awk '{SUM += $1} END {print SUM}')
 						echo $pktsIn
 						;;
 					pktsOut)
-						pktsOut=$(ipsec statusall | grep -e "$CONN" | grep bytes_i | awk -F" " '{print $11}' | cut -c 2-)
+						pktsOut=$(ipsec statusall | grep -e "$CONN" | grep bytes_i | awk -F" " '{print $11}' | cut -c 2- | awk '{SUM += $1} END {print SUM}')
 						echo $pktsOut
 						;;
 					*)
