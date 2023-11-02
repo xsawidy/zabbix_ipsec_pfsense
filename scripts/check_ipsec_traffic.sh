@@ -16,28 +16,29 @@ fi
 
 getTraffic() {
 	CONN="$1"_
+	CONNALT="$1"{
 	METRIC="$2"
 
 	if [ "$STRONG" -eq "1" ]; then
-		ipsec status | grep -e "$CONN" > /dev/null 2>&1
+		ipsec status | grep -e "$CONN" -e "$CONNALT" > /dev/null 2>&1
 		if [ $? -eq 0 ]; then
-			ipsec statusall | grep -e "$CONN" | grep -e "bytes" | grep -e "pkts" > /dev/null 2>&1
+			ipsec statusall | grep -e "$CONN" -e "$CONNALT" | grep -e "bytes" > /dev/null 2>&1
 			if [ $? -eq 0 ]; then
 				case $METRIC in
 					bytesIn)
-						bytesIn=$(ipsec statusall | grep -e "$CONN" | grep bytes_i | awk -F" " '{print $3}' | awk '{SUM += $1} END {print SUM}')
+						bytesIn=$(ipsec statusall | grep -e "$CONN" -e "$CONNALT" | grep bytes_i | awk -F" " '{print $3}' | awk '{SUM += $1} END {print SUM}')
 						echo $bytesIn
 						;;
 					bytesOut)
-						bytesOut=$(ipsec statusall | grep -e "$CONN" | grep bytes_i | awk -F" " '{print $9}' | awk '{SUM += $1} END {print SUM}')
+						bytesOut=$(ipsec statusall | grep -e "$CONN" -e "$CONNALT" | grep bytes_i | awk -F" " '{print $9}' | awk '{SUM += $1} END {print SUM}')
 						echo $bytesOut
 						;;
 					pktsIn)
-						pktsIn=$(ipsec statusall | grep -e "$CONN" | grep bytes_i | awk -F" " '{print $5}' | cut -c 2- | awk '{SUM += $1} END {print SUM}')
+						pktsIn=$(ipsec statusall | grep -e "$CONN" -e "$CONNALT" | grep bytes_i | awk -F" " '{print $5}' | cut -c 2- | awk '{SUM += $1} END {print SUM}')
 						echo $pktsIn
 						;;
 					pktsOut)
-						pktsOut=$(ipsec statusall | grep -e "$CONN" | grep bytes_i | awk -F" " '{print $11}' | cut -c 2- | awk '{SUM += $1} END {print SUM}')
+						pktsOut=$(ipsec statusall | grep -e "$CONN" -e "$CONNALT" | grep bytes_i | awk -F" " '{print $11}' | cut -c 2- | awk '{SUM += $1} END {print SUM}')
 						echo $pktsOut
 						;;
 					*)
