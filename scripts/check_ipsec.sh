@@ -17,13 +17,14 @@ fi
 
 test_tunnel() {
 	CONN="$1"_
+	CONNALT="$1"{
 
 	if [ "$STRONG" -eq "1" ]; then
-		ipsec status | grep -e "$CONN" > /dev/null 2>&1
+		ipsec status | grep -e "$CONN" -e "$CONNALT" > /dev/null 2>&1
 		if [ $? -eq 0 ]; then
-			ipsec statusall | grep -e "$CONN" | grep -i "rekeying" > /dev/null 2>&1
+			ipsec statusall | grep -e "$CONN" -e "$CONNALT" | grep -i "rekeying" > /dev/null 2>&1
 			if [ $? -eq 0 ]; then
-				ipsec statusall | grep -e "$CONN" | grep -v "rekeying" | grep -E "$IPV4_REGEX" > /dev/null 2>&1
+				ipsec statusall | grep -e "$CONN" -e "$CONNALT" | grep -v "rekeying" | grep -E "$IPV4_REGEX" > /dev/null 2>&1
 				if [ $? -eq 0 ]; then
 					return 0
 				fi
